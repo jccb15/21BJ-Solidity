@@ -5,6 +5,7 @@ import "./Owned.sol";
 contract TOBJ is Owned{
     
     uint EthChipConvRate = 1000;
+    uint ChipToWei = 1000000000000000;
     mapping(address => uint) public playerBalance;
     mapping(uint => Game) public Games;
 
@@ -26,16 +27,16 @@ contract TOBJ is Owned{
     }
     
     
-    function depositFunds() public payable{
+    function buyChips() public payable{
         assert(playerBalance[msg.sender] + msg.value >= playerBalance[msg.sender]);
-        playerBalance[msg.sender]+= msg.value;
+        playerBalance[msg.sender]+= msg.value/ChipToWei;
     }
     
     function withdrawFunds(uint _amount) public payable{
         require(playerBalance[msg.sender] >= _amount, "insuficcient balance");
         assert(playerBalance[msg.sender] - _amount <= playerBalance[msg.sender]);
         playerBalance[msg.sender]-= _amount;
-        msg.sender.transfer(_amount);
+        msg.sender.transfer(_amount*ChipToWei);
     }
     
     function transferChips(address _to, uint _amount) public {
@@ -66,7 +67,7 @@ contract TOBJ is Owned{
     }
     
     function placeBet(uint gameID, address player, uint amount) public onlyOwnwer{
-        require(amount <= playerBalance[player]);
+        require(amount <= playerBalance[player], "insufficient balance");
         assert(playerBalance[player] - amount <= playerBalance[player]);
         assert(Games[gameID].Bets[player] + amount >= Games[gameID].Bets[player]);
         
@@ -74,13 +75,13 @@ contract TOBJ is Owned{
         Games[gameID].Bets[player] += amount;
     }
     
-    function ethToChips(uint _ethAmount) public view returns(uint){
-        return (_ethAmount * EthChipConvRate);
-    }
+    // function ethToChips(uint _ethAmount) public view returns(uint){
+    //     return (_ethAmount * EthChipConvRate);
+    // }
     
-    function chipsToEth(uint _chipAmount) public view returns(uint){
-        return _chipAmount / EthChipConvRate;
-    }
+    // function chipsToEth(uint _chipAmount) public view returns(uint){
+    //     return _chipAmount / EthChipConvRate;
+    // }
     
     
     //Getters
@@ -91,6 +92,11 @@ contract TOBJ is Owned{
            cards[i] = Games[gameID].playersHands[player].cards[i];
        }
        return cards;
+    }
+    
+    receive() external payable { 
+        assert(playerBalance[msg.sender] + msg.value >= playerBalance[msg.sender]);
+        playerBalance[msg.sender]+= msg.value/ChipToWei;
     }
 
     
