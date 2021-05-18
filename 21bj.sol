@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.0;
 
 import "./Owned.sol";
 
@@ -8,6 +8,7 @@ contract TOBJ is Owned{
     uint ChipToWei = 1000000000000000;
     mapping(address => uint) public playerBalance;
     mapping(uint => Game) public Games;
+    
 
     struct Game{
         uint gameID;
@@ -22,8 +23,14 @@ contract TOBJ is Owned{
     
     struct Hand{
         uint8 numberOfCards;
-        mapping (uint8=>uint8) cards;
+        mapping (uint8=>Card) cards;
         
+    }
+    
+    enum CardSuit { CLUBS, DIAMONDS, HEARTS, SPADES }
+    struct Card{
+        uint8 value;
+        CardSuit suit;
     }
     
     
@@ -32,12 +39,12 @@ contract TOBJ is Owned{
         playerBalance[msg.sender]+= msg.value/ChipToWei;
     }
     
-    function withdrawFunds(uint _amount) public payable{
-        require(playerBalance[msg.sender] >= _amount, "insuficcient balance");
-        assert(playerBalance[msg.sender] - _amount <= playerBalance[msg.sender]);
-        playerBalance[msg.sender]-= _amount;
-        msg.sender.transfer(_amount*ChipToWei);
-    }
+    // function withdrawFunds(uint _amount) public payable{
+    //     require(playerBalance[msg.sender] >= _amount, "insuficcient balance");
+    //     assert(playerBalance[msg.sender] - _amount <= playerBalance[msg.sender]);
+    //     playerBalance[msg.sender]-= _amount;
+    //     msg.sender.transfer(_amount*ChipToWei);
+    // }
     
     function transferChips(address _to, uint _amount) public {
         require(playerBalance[msg.sender] >= _amount, "insuficcient balance");
@@ -47,13 +54,14 @@ contract TOBJ is Owned{
     }
     
     
-    function getNewCard() public{
-        //emit an event
-    }
+    // function getNewCard() public{
+    //     //emit an event
+    // }
     
-    function giveNewCard(uint gameID, address player, uint8 cardValue) public onlyOwnwer{
+    function giveNewCard(uint gameID, address player, uint8 cardValue, CardSuit suit ) public onlyOwnwer{
     
-        Games[gameID].playersHands[player].cards[Games[gameID].playersHands[player].numberOfCards] = cardValue;
+        Games[gameID].playersHands[player].cards[Games[gameID].playersHands[player].numberOfCards].value = cardValue;
+        Games[gameID].playersHands[player].cards[Games[gameID].playersHands[player].numberOfCards].suit = suit;
         Games[gameID].playersHands[player].numberOfCards += 1;
         
     }
@@ -67,7 +75,7 @@ contract TOBJ is Owned{
     }
     
     function placeBet(uint gameID, address player, uint amount) public onlyOwnwer{
-        require(amount <= playerBalance[player], "insufficient balance");
+        require(playerBalance[player] >= amount, "insufficient balance");
         assert(playerBalance[player] - amount <= playerBalance[player]);
         assert(Games[gameID].Bets[player] + amount >= Games[gameID].Bets[player]);
         
@@ -85,15 +93,22 @@ contract TOBJ is Owned{
     
     
     //Getters
-    function getPlayerHand (uint gameID, address player) public returns(uint8[] memory) {
+    function getPlayerHand (uint gameID, address player) public view returns(Card[] memory) {
        uint8 numCards = Games[gameID].playersHands[player].numberOfCards;
-       uint8[] memory cards = new uint8[](numCards);
+       Card[] memory cards = new Card[](numCards);
        for (uint8 i=0; i<numCards; i++) {
            cards[i] = Games[gameID].playersHands[player].cards[i];
        }
        return cards;
     }
     
+    // function getPlayerBets (uint gameID, address player) public returns(uint) {
+    //   uint amountBetted = Game[gameID].Bets[player]; 
+    //   return amountBetted;
+    // }
+    
+    
+    //Function to directly buy chips
     receive() external payable { 
         assert(playerBalance[msg.sender] + msg.value >= playerBalance[msg.sender]);
         playerBalance[msg.sender]+= msg.value/ChipToWei;
