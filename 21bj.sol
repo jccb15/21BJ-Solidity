@@ -78,6 +78,10 @@ contract TOBJ is Owned{
         playerBalance[player] = newBalance;
     }
     
+    function markGamePayed(uint gameID) public onlyOwnwer{
+        Games[gameID].payed = true;
+    }
+    
     function placeBet(uint gameID, address player, uint amount) public onlyOwnwer{
         require(playerBalance[player] >= amount, "insufficient balance");
         assert(playerBalance[player] - amount <= playerBalance[player]);
@@ -117,6 +121,8 @@ contract TOBJ is Owned{
         assert(playerBalance[msg.sender] + msg.value >= playerBalance[msg.sender]);
         playerBalance[msg.sender]+= msg.value/ChipToWei;
     }
+    
+    
 
     
 }
