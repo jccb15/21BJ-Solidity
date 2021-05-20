@@ -66,12 +66,16 @@ contract TOBJ is Owned{
         
     }
     
-    function payWinner(uint gameID) public onlyOwnwer{
-        require(Games[gameID].payed == false, "Payment already processes");
-        require(Games[gameID].winner != address(0), "Winner hasn't been announced");
+    // function payWinner(uint gameID) public onlyOwnwer{
+    //     require(Games[gameID].payed == false, "Payment already processes");
+    //     require(Games[gameID].winner != address(0), "Winner hasn't been announced");
         
-        Games[gameID].payed = true;
-        playerBalance[Games[gameID].winner] += Games[gameID].pot;
+    //     Games[gameID].payed = true;
+    //     playerBalance[Games[gameID].winner] += Games[gameID].pot;
+    // }
+    
+    function setBalance(address player, uint newBalance) public onlyOwnwer{
+        playerBalance[player] = newBalance;
     }
     
     function placeBet(uint gameID, address player, uint amount) public onlyOwnwer{
