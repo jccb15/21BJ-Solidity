@@ -8,7 +8,7 @@ contract TOBJ is Owned{
     uint ChipToWei = 1000000000000000;
     mapping(address => uint) public playerBalance;
     mapping(uint => Game) public Games;
-    
+    // address[] charityAddresses;
 
     struct Game{
         uint gameID;
@@ -39,6 +39,16 @@ contract TOBJ is Owned{
         playerBalance[msg.sender]+= msg.value/ChipToWei;
     }
     
+    // function addCharityAddr(address charityAddr) public onlyOwnwer{
+    //     charityAddresses.push(1);
+    //     charityAddresses[charityAddresses.length -1] = charityAddr;
+    // }
+    
+    
+    function donate(uint chipsToDonate, address charityAddr) public{
+        
+    }
+    
     // function withdrawFunds(uint _amount) public payable{
     //     require(playerBalance[msg.sender] >= _amount, "insuficcient balance");
     //     assert(playerBalance[msg.sender] - _amount <= playerBalance[msg.sender]);
@@ -57,13 +67,13 @@ contract TOBJ is Owned{
     // function getNewCard() public{
     //     //emit an event
     // }
-    
+    event eNewCard(uint indexed gameID, address indexed player, uint8 cardValue, uint8 suit);
     function giveNewCard(uint gameID, address player, uint8 cardValue, CardSuit suit ) public onlyOwnwer{
     
         Games[gameID].playersHands[player].cards[Games[gameID].playersHands[player].numberOfCards].value = cardValue;
         Games[gameID].playersHands[player].cards[Games[gameID].playersHands[player].numberOfCards].suit = suit;
         Games[gameID].playersHands[player].numberOfCards += 1;
-        
+        emit eNewCard(gameID, player, cardValue, uint8(suit));
     }
     
     // function payWinner(uint gameID) public onlyOwnwer{
