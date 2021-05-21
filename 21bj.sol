@@ -8,7 +8,7 @@ contract TOBJ is Owned{
     uint ChipToWei = 1000000000000000;
     mapping(address => uint) public playerBalance;
     mapping(uint => Game) public Games;
-    // address[] charityAddresses;
+    mapping (address => bool) charityAddresses;
 
     struct Game{
         uint gameID;
@@ -39,14 +39,18 @@ contract TOBJ is Owned{
         playerBalance[msg.sender]+= msg.value/ChipToWei;
     }
     
-    // function addCharityAddr(address charityAddr) public onlyOwnwer{
-    //     charityAddresses.push(1);
-    //     charityAddresses[charityAddresses.length -1] = charityAddr;
-    // }
+    function addCharityAddr(address charityAddr) public onlyOwnwer{
+        charityAddresses[charityAddr] = true;
+    }
     
     
-    function donate(uint chipsToDonate, address charityAddr) public{
+    function donateChips(uint chipsToDonate, address payable charityAddr) public{
+        require(charityAddresses[charityAddr] == true, "The given address is not an approved Charity");
+        require(playerBalance[msg.sender] >= chipsToDonate, "insuficcient balance");
+        assert(playerBalance[msg.sender] - chipsToDonate <= playerBalance[msg.sender]);
         
+        playerBalance[msg.sender] -= chipsToDonate;
+        charityAddr.transfer(chipsToDonate * ChipToWei);
     }
     
     // function withdrawFunds(uint _amount) public payable{
@@ -101,14 +105,6 @@ contract TOBJ is Owned{
         Games[gameID].Bets[player] += amount;
     }
     
-    // function ethToChips(uint _ethAmount) public view returns(uint){
-    //     return (_ethAmount * EthChipConvRate);
-    // }
-    
-    // function chipsToEth(uint _chipAmount) public view returns(uint){
-    //     return _chipAmount / EthChipConvRate;
-    // }
-    
     
     //Getters
     function getPlayerHand (uint gameID, address player) public view returns(Card[] memory) {
@@ -128,7 +124,7 @@ contract TOBJ is Owned{
     
     //Function to directly buy chips
     receive() external payable { 
-        assert(playerBalance[msg.sender] + msg.value >= playerBalance[msg.sender]);
+        assert(playerBalance[msg.sender] + msg.value/ChipToWei >= playerBalance[msg.sender]);
         playerBalance[msg.sender]+= msg.value/ChipToWei;
     }
     
