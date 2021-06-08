@@ -13,8 +13,8 @@ contract TOBJ is Owned{
     struct Game{
         uint gameID;
         uint pot;
-        mapping (address => uint) Bets;
-        uint playerTurn;
+        // mapping (address => uint) Bets;
+        // uint playerTurn;
         address winner;
         bool payed;
         mapping (address => Hand) playersHands;
@@ -24,7 +24,6 @@ contract TOBJ is Owned{
     struct Hand{
         uint8 numberOfCards;
         mapping (uint8=>Card) cards;
-        
     }
     
     enum CardSuit { CLUBS, DIAMONDS, HEARTS, SPADES }
@@ -38,6 +37,7 @@ contract TOBJ is Owned{
         assert(playerBalance[msg.sender] + msg.value >= playerBalance[msg.sender]);
         playerBalance[msg.sender]+= msg.value/ChipToWei;
     }
+    
     
     function addCharityAddr(address charityAddr) public onlyOwnwer{
         charityAddresses[charityAddr] = true;
@@ -53,13 +53,7 @@ contract TOBJ is Owned{
         charityAddr.transfer(chipsToDonate * ChipToWei);
     }
     
-    // function withdrawFunds(uint _amount) public payable{
-    //     require(playerBalance[msg.sender] >= _amount, "insuficcient balance");
-    //     assert(playerBalance[msg.sender] - _amount <= playerBalance[msg.sender]);
-    //     playerBalance[msg.sender]-= _amount;
-    //     msg.sender.transfer(_amount*ChipToWei);
-    // }
-    
+
     function transferChips(address _to, uint _amount) public {
         require(playerBalance[msg.sender] >= _amount, "insuficcient balance");
         assert(playerBalance[msg.sender] - _amount <= playerBalance[msg.sender]);
@@ -67,34 +61,30 @@ contract TOBJ is Owned{
         playerBalance[_to] += _amount;
     }
     
-    
-    // function getNewCard() public{
-    //     //emit an event
-    // }
+
     event eNewCard(uint indexed gameID, address indexed player, uint8 cardValue, uint8 suit);
     function giveNewCard(uint gameID, address player, uint8 cardValue, CardSuit suit ) public onlyOwnwer{
-    
-        Games[gameID].playersHands[player].cards[Games[gameID].playersHands[player].numberOfCards].value = cardValue;
-        Games[gameID].playersHands[player].cards[Games[gameID].playersHands[player].numberOfCards].suit = suit;
-        Games[gameID].playersHands[player].numberOfCards += 1;
-        emit eNewCard(gameID, player, cardValue, uint8(suit));
+        
+        address playerAddr;
+        if (player != Owned.owner){ playerAddr = player;}
+        
+        // Games[gameID].playersHands[player].cards[Games[gameID].playersHands[player].numberOfCards].value = cardValue;
+        // Games[gameID].playersHands[player].cards[Games[gameID].playersHands[player].numberOfCards].suit = suit;
+        // Games[gameID].playersHands[player].numberOfCards += 1;
+        
+        emit eNewCard(gameID, playerAddr, cardValue, uint8(suit));
     }
     
-    // function payWinner(uint gameID) public onlyOwnwer{
-    //     require(Games[gameID].payed == false, "Payment already processes");
-    //     require(Games[gameID].winner != address(0), "Winner hasn't been announced");
-        
-    //     Games[gameID].payed = true;
-    //     playerBalance[Games[gameID].winner] += Games[gameID].pot;
-    // }
     
     function setBalance(address player, uint newBalance) public onlyOwnwer{
         playerBalance[player] = newBalance;
     }
     
+    
     function markGamePayed(uint gameID) public onlyOwnwer{
         Games[gameID].payed = true;
     }
+    
     
     function placeBet(uint gameID, address player, uint amount) public onlyOwnwer{
         require(playerBalance[player] >= amount, "insufficient balance");
@@ -115,12 +105,7 @@ contract TOBJ is Owned{
        }
        return cards;
     }
-    
-    // function getPlayerBets (uint gameID, address player) public returns(uint) {
-    //   uint amountBetted = Game[gameID].Bets[player]; 
-    //   return amountBetted;
-    // }
-    
+
     
     //Function to directly buy chips
     receive() external payable { 
@@ -128,7 +113,24 @@ contract TOBJ is Owned{
         playerBalance[msg.sender]+= msg.value/ChipToWei;
     }
     
+    // 
+    // function getPlayerBets (uint gameID, address player) public returns(uint) {
+    //   uint amountBetted = Game[gameID].Bets[player]; 
+    //   return amountBetted;
+    // }
     
-
+    // function payWinner(uint gameID) public onlyOwnwer{
+    //     require(Games[gameID].payed == false, "Payment already processes");
+    //     require(Games[gameID].winner != address(0), "Winner hasn't been announced");
+        
+    //     Games[gameID].payed = true;
+    //     playerBalance[Games[gameID].winner] += Games[gameID].pot;
+    // }
     
+    // function withdrawFunds(uint _amount) public payable{
+    //     require(playerBalance[msg.sender] >= _amount, "insuficcient balance");
+    //     assert(playerBalance[msg.sender] - _amount <= playerBalance[msg.sender]);
+    //     playerBalance[msg.sender]-= _amount;
+    //     msg.sender.transfer(_amount*ChipToWei);
+    // }
 }
